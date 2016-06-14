@@ -95,6 +95,12 @@ Example usages:
     * Generate data into csv (mysql is default):
       $ php -f install_cli.php -- --storage csv
 
+    * Generate 5000 records into all out-of-box and custom modules, plus defines all Many/Many relationships
+      $ php -f install_cli.php -- -a
+
+    * Choose the number of records to insert into all modules
+      $ php -f install_cli.php -- -a=1000
+
     * Obliterate all data when generating new records with 300 users:
       $php -f install_cli.php -- -o -u 400
       

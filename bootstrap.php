@@ -38,7 +38,7 @@
 $usageStr = "Usage: " . $_SERVER['PHP_SELF'] .
     " [-l loadFactor] [-u userCount] [-x txBatchSize] [-e] [-c] [-t] [-h] [-v]\n";
 
-$versionStr = "Tidbit v2.0 -- Compatible with SugarCRM 5.5 through 6.0.\n";
+$versionStr = "Tidbit v2.0 -- Compatible with SugarCRM 5.5 and up.\n";
 $helpStr = <<<EOS
 $versionStr
 This script populates your instance of SugarCRM with realistic demo data.
@@ -54,6 +54,18 @@ Options
     -u userCount    	The number of Users to create.  If not specified,
                     	but loadFactor is, number of users is 1/10th of
                     	loadFactor.  Otherwise, default is 100.
+
+    -a=recordCount      All Modules and M/M Relationships. Scans the Sugar system
+                        to for all out-of-box and custom modules and M/M relationships
+                        and will insert records to populate all. If modules and
+                        relationships are configured in install_config.php, those
+                        configurations are not overridden, only appended-to. If
+                        not specified, will create 5000 records for these modules. 
+                        It is recommended that this option still be used with
+                        custom configuration in install_config.php and Data/* files
+                        to handle custom fields, one/many relationships and any
+                        customization like custom indexes or auto-incrementing 
+                        fields.  
 
     -o              	Turn Obliterate Mode on.  All existing records and
                     	relationships in the tables populated by this script will
@@ -134,7 +146,7 @@ if (!function_exists('getopt')) {
 }
 
 $opts = getopt(
-    'l:u:s:x:ecothvd',
+    'l:u:a::s:x:ecothvd',
     array(
         'fullteamset',
         'tba_level:',
@@ -222,6 +234,18 @@ $GLOBALS['timedate']->allow_cache = false;
 
 $GLOBALS['processedRecords'] = 0;
 $GLOBALS['allProcessedRecords'] = 0;
+
+/*
+ * if user wants all modules, append system modules + relationships to existing
+ * configuration
+ */
+if (isset($opts['a'])) {
+    $modules = generate_full_module_list(
+        is_numeric($opts['a']) ? $opts['a'] : 5000,
+        $modules
+    );
+    $tidbit_relationships = generate_m2m_relationship_list($tidbit_relationships);
+}
 
 $GLOBALS['modules'] = $modules;
 $GLOBALS['startTime'] = microtime();
